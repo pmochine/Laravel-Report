@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * This file is part of Laravel Reportable.
  *
@@ -11,11 +9,11 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace BrianFaust\Reportable;
+namespace Pmochine\Report;
 
 use Illuminate\Support\ServiceProvider;
 
-class ReportableServiceProvider extends ServiceProvider
+class ReportServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap any application services.
@@ -23,7 +21,7 @@ class ReportableServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__.'/../database/migrations' => database_path('migrations'),
+            __DIR__ . '/../database/migrations' => database_path('migrations'),
         ], 'migrations');
     }
 }

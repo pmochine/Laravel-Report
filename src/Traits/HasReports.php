@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * This file is part of Laravel Reportable.
  *
@@ -11,9 +9,9 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace BrianFaust\Reportable\Traits;
+namespace Pmochine\Report\Traits;
 
-use BrianFaust\Reportable\Models\Report;
+use Pmochine\Report\Models\Report;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
@@ -24,11 +22,11 @@ trait HasReports
         return $this->morphMany(Report::class, 'reportable');
     }
 
-    public function report($data, Model $reportable): Report
+    public function report($data, Model $reporter): Report
     {
         $report = (new Report())->fill(array_merge($data, [
-            'reporter_id'   => $reportable->id,
-            'reporter_type' => get_class($reportable),
+            'reporter_id' => $reporter->id,
+            'reporter_type' => get_class($reporter),
         ]));
 
         $this->reports()->save($report);

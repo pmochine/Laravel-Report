@@ -1,22 +1,22 @@
-# Laravel Reportable
+# Laravel Report 📢
 
-[![Build Status](https://img.shields.io/travis/faustbrian/Laravel-Reportable/master.svg?style=flat-square)](https://travis-ci.org/faustbrian/Laravel-Reportable)
-[![PHP from Packagist](https://img.shields.io/packagist/php-v/faustbrian/laravel-reportable.svg?style=flat-square)]()
-[![Latest Version](https://img.shields.io/github/release/faustbrian/Laravel-Reportable.svg?style=flat-square)](https://github.com/faustbrian/Laravel-Reportable/releases)
-[![License](https://img.shields.io/packagist/l/faustbrian/Laravel-Reportable.svg?style=flat-square)](https://packagist.org/packages/faustbrian/Laravel-Reportable)
+[![Build Status](https://img.shields.io/travis/pmochine/Laravel-Report/master.svg?style=flat-square)](https://travis-ci.org/pmochine/Laravel-Report)
+[![PHP from Packagist](https://img.shields.io/packagist/php-v/pmochine/laravel-report.svg?style=flat-square)]()
+[![Latest Version](https://img.shields.io/github/release/pmochine/Laravel-Report.svg?style=flat-square)](https://github.com/pmochine/Laravel-Report/releases)
+[![License](https://img.shields.io/packagist/l/pmochine/Laravel-Report.svg?style=flat-square)](https://packagist.org/packages/pmochine/Laravel-Report)
 
 ## Installation
 
 Require this package, with [Composer](https://getcomposer.org/), in the root directory of your project.
 
 ``` bash
-$ composer require faustbrian/laravel-reportable
+$ composer require pmochine/laravel-report
 ```
 
 To get started, you'll need to publish the vendor assets and migrate:
 
 ```
-php artisan vendor:publish --provider="BrianFaust\Reportable\ReportableServiceProvider" && php artisan migrate
+php artisan vendor:publish --provider="Pmochine\Report\ReportServiceProvider" && php artisan migrate
 ```
 
 ## Usage
@@ -27,7 +27,7 @@ php artisan vendor:publish --provider="BrianFaust\Reportable\ReportableServicePr
 
 namespace App;
 
-use BrianFaust\Reportable\HasReports;
+use Pmochine\Report\HasReports;
 use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
@@ -78,9 +78,12 @@ $ phpunit
 
 ## Security
 
-If you discover a security vulnerability within this package, please send an e-mail to hello@brianfaust.me. All security vulnerabilities will be promptly addressed.
+If you discover any security related issues, please don't email me. I'm afraid 😱. avidofood@protonmail.com
 
 ## Credits
+
+Now comes the best part! 😍
+This package is based on
 
 - [Brian Faust](https://github.com/faustbrian)
 - [All Contributors](../../contributors)

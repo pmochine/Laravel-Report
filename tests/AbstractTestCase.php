@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * This file is part of Laravel Reportable.
  *
@@ -11,7 +9,7 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace BrianFaust\Tests\Reportable;
+namespace Pmochine\Tests\Report;
 
 use GrahamCampbell\TestBench\AbstractPackageTestCase;
 
@@ -26,6 +24,6 @@ abstract class AbstractTestCase extends AbstractPackageTestCase
      */
     protected function getServiceProviderClass($app): string
     {
-        return \BrianFaust\Reportable\ReportableServiceProvider::class;
+        return \Pmochine\Report\ReportServiceProvider::class;
     }
 }
