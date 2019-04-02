@@ -1,9 +1,7 @@
 # Laravel Report 📢
 
-[![Build Status](https://img.shields.io/travis/pmochine/Laravel-Report/master.svg?style=flat-square)](https://travis-ci.org/pmochine/Laravel-Report)
 [![PHP from Packagist](https://img.shields.io/packagist/php-v/pmochine/laravel-report.svg?style=flat-square)]()
 [![Latest Version](https://img.shields.io/github/release/pmochine/Laravel-Report.svg?style=flat-square)](https://github.com/pmochine/Laravel-Report/releases)
-[![License](https://img.shields.io/packagist/l/pmochine/Laravel-Report.svg?style=flat-square)](https://packagist.org/packages/pmochine/Laravel-Report)
 
 ## Installation
 
