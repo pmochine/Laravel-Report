@@ -83,7 +83,7 @@ If you discover any security related issues, please don't email me. I'm afraid ğ
 Now comes the best part! ğŸ˜
 This package is based on
 
-- [Brian Faust](https://github.com/faustbrian)
+- [Brian Faust's Laravel-Reportable](https://github.com/faustbrian/Laravel-Reportable)
 - [All Contributors](../../contributors)
 
 ## License
