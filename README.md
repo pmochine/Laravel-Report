@@ -25,7 +25,7 @@ php artisan vendor:publish --provider="Pmochine\Report\ReportServiceProvider" &&
 
 namespace App;
 
-use Pmochine\Report\HasReports;
+use Pmochine\Report\Traits\HasReports;
 use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
