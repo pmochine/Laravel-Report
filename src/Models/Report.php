@@ -26,6 +26,11 @@ class Report extends Model
         return $this->morphTo();
     }
 
+    public function reporter(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
     public function conclusion(): HasOne
     {
         return $this->hasOne(Conclusion::class);
