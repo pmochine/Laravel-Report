@@ -56,6 +56,8 @@ Schema::table('reports_conclusions', function (Blueprint $table) {
 
 - `Report::reporter()` returns the model that sent the report. The idea comes from pull request #1 by Tamás Béres.
 - `Conclusion::report()` returns the report of a conclusion.
+- `Report::conclusions()` returns all conclusions of a report.
+- The query scopes `Report::pending()` and `Report::concluded()` find reports without and with a conclusion.
 - A test suite with Orchestra Testbench for Laravel 11, 12 and 13.
 - A GitHub Actions workflow for PHP 8.2 to 8.5.
 

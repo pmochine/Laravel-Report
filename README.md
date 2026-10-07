@@ -94,7 +94,7 @@ $report->conclude([
 ```
 
 If you conclude a report again, the package adds a second conclusion and keeps the first one.
-`$report->conclusion` returns the latest conclusion.
+`$report->conclusion` returns the latest conclusion, and `$report->conclusions` returns all of them.
 
 ### Read conclusions and judges
 
@@ -103,6 +103,17 @@ $report->conclusion;          // The latest conclusion, or null
 $report->judge();             // Shortcut for $report->conclusion->judge, null without a conclusion
 $conclusion->report;          // The report of a conclusion
 Report::allJudges();          // Each model that concluded a report, once
+```
+
+### Find open reports
+
+Use the query scopes `pending()` and `concluded()` to build a moderation queue:
+
+```php
+Report::pending()->get();                  // Reports without a conclusion
+Report::concluded()->get();                // Reports with at least one conclusion
+$post->reports()->pending()->count();      // Open reports for one post
+$report->conclusions;                      // All conclusions of the report
 ```
 
 The class `Report` is `Pmochine\Report\Models\Report`.

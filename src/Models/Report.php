@@ -11,7 +11,9 @@
 
 namespace Pmochine\Report\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Arr;
@@ -38,6 +40,27 @@ class Report extends Model
     public function conclusion(): HasOne
     {
         return $this->hasOne(Conclusion::class)->latestOfMany();
+    }
+
+    public function conclusions(): HasMany
+    {
+        return $this->hasMany(Conclusion::class);
+    }
+
+    /**
+     * Reports without a conclusion.
+     */
+    public function scopePending(Builder $query): void
+    {
+        $query->doesntHave('conclusions');
+    }
+
+    /**
+     * Reports with at least one conclusion.
+     */
+    public function scopeConcluded(Builder $query): void
+    {
+        $query->has('conclusions');
     }
 
     public function judge(): ?Model
