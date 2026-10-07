@@ -3,6 +3,9 @@
 namespace Pmochine\Tests\Report;
 
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\Schema;
 use Pmochine\Report\Models\Report;
 use Pmochine\Tests\Report\Fixtures\Member;
 use Pmochine\Tests\Report\Fixtures\Post;
@@ -160,5 +163,21 @@ class ReportTest extends AbstractTestCase
         $post->report(['reason' => 'Spam'], $user);
 
         $this->assertTrue($post->isReportedBy($user));
+    }
+
+    public function test_the_unique_index_from_the_readme_stops_a_second_report(): void
+    {
+        Schema::table('reports', function (Blueprint $table) {
+            $table->unique(['reportable_type', 'reportable_id', 'reporter_type', 'reporter_id']);
+        });
+
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+        $post->report(['reason' => 'Spam'], $user);
+        Post::create(['title' => 'Other'])->report(['reason' => 'Spam'], $user);
+
+        $this->expectException(UniqueConstraintViolationException::class);
+
+        $post->report(['reason' => 'Spam again'], $user);
     }
 }

@@ -92,6 +92,15 @@ if (! $post->isReportedBy($user)) {
 }
 ```
 
+The check does not lock the table, so two requests at the same moment can both pass it.
+For a strict rule, add a unique index to the published migration:
+
+```php
+$table->unique(['reportable_type', 'reportable_id', 'reporter_type', 'reporter_id']);
+```
+
+Then a second report from the same reporter fails with `Illuminate\Database\UniqueConstraintViolationException`.
+
 ### Read reports
 
 ```php
