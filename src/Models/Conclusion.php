@@ -21,7 +21,10 @@ class Conclusion extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
-    protected $casts = ['meta' => 'array'];
+    protected function casts(): array
+    {
+        return ['meta' => 'array'];
+    }
 
     public function conclusion(): BelongsTo
     {

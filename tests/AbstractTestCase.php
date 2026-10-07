@@ -11,19 +11,39 @@
 
 namespace Pmochine\Tests\Report;
 
-use GrahamCampbell\TestBench\AbstractPackageTestCase;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Orchestra\Testbench\TestCase;
+use Pmochine\Report\ReportServiceProvider;
 
-abstract class AbstractTestCase extends AbstractPackageTestCase
+abstract class AbstractTestCase extends TestCase
 {
-    /**
-     * Get the service provider class.
-     *
-     * @param \Illuminate\Interfaces\Foundation\Application $app
-     *
-     * @return string
-     */
-    protected function getServiceProviderClass($app): string
+    protected function tearDown(): void
     {
-        return \Pmochine\Report\ReportServiceProvider::class;
+        Relation::morphMap([], false);
+        Relation::requireMorphMap(false);
+
+        parent::tearDown();
+    }
+
+    protected function getPackageProviders($app): array
+    {
+        return [ReportServiceProvider::class];
+    }
+
+    protected function defineEnvironment($app): void
+    {
+        $app['config']->set('database.default', 'testing');
+        $app['config']->set('database.connections.testing', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+        ]);
+    }
+
+    protected function defineDatabaseMigrations(): void
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/Fixtures/migrations');
     }
 }

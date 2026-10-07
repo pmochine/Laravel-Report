@@ -1,0 +1,64 @@
+name: tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: PHP ${{ matrix.php }}, Laravel ${{ matrix.laravel }}, ${{ matrix.stability }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4', '8.5']
+        laravel: ['11', '12', '13']
+        stability: [prefer-stable]
+        exclude:
+          - laravel: '11'
+            php: '8.5'
+          - laravel: '13'
+            php: '8.2'
+        # The lowest dependencies run on the lowest PHP version of each Laravel release.
+        include:
+          - laravel: '11'
+            php: '8.2'
+            stability: prefer-lowest
+          - laravel: '12'
+            php: '8.2'
+            stability: prefer-lowest
+          - laravel: '13'
+            php: '8.3'
+            stability: prefer-lowest
+
+    env:
+      # Laravel 11 no longer gets security fixes, and Composer blocks releases with open advisories.
+      # The tests must still install them to check the supported version range.
+      COMPOSER_NO_SECURITY_BLOCKING: 1
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo_sqlite, sqlite3
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Install dependencies
+        run: |
+          composer require "laravel/framework:^${{ matrix.laravel }}.0" --dev --no-interaction --no-update
+          composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
+
+      - name: Run tests
+        run: vendor/bin/phpunit

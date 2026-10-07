@@ -18,10 +18,12 @@ class ReportServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot()
+    public function boot(): void
     {
-        $this->publishes([
-            __DIR__ . '/../database/migrations' => database_path('migrations'),
-        ], 'migrations');
+        if ($this->app->runningInConsole()) {
+            $this->publishesMigrations([
+                __DIR__ . '/../database/migrations' => database_path('migrations'),
+            ], 'migrations');
+        }
     }
 }
