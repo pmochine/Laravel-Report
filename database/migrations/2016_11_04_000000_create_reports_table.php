@@ -31,7 +31,7 @@ return new class extends Migration
             $table->foreignId('report_id')->index();
             $table->morphs('judge');
             $table->text('conclusion');
-            $table->text('action_taken');
+            $table->text('action_taken')->nullable();
             $table->json('meta')->nullable();
             $table->timestamps();
         });
