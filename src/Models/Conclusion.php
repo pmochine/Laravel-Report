@@ -26,7 +26,7 @@ class Conclusion extends Model
         return ['meta' => 'array'];
     }
 
-    public function conclusion(): BelongsTo
+    public function report(): BelongsTo
     {
         return $this->belongsTo(Report::class);
     }

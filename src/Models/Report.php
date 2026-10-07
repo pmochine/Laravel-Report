@@ -39,9 +39,9 @@ class Report extends Model
         return $this->hasOne(Conclusion::class);
     }
 
-    public function judge(): Model
+    public function judge(): ?Model
     {
-        return $this->conclusion->judge;
+        return $this->conclusion?->judge;
     }
 
     public function conclude(array $data, Model $judge): Conclusion
@@ -50,6 +50,7 @@ class Report extends Model
         $conclusion->judge()->associate($judge);
 
         $this->conclusion()->save($conclusion);
+        $this->setRelation('conclusion', $conclusion);
 
         return $conclusion;
     }

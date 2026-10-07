@@ -54,6 +54,32 @@ class ConclusionTest extends AbstractTestCase
         $this->assertNull($conclusion->fresh()->action_taken);
     }
 
+    public function test_a_conclusion_belongs_to_its_report(): void
+    {
+        $report = $this->newReport();
+
+        $conclusion = $report->conclude(['conclusion' => 'Valid.'], User::create(['name' => 'Judge']));
+
+        $this->assertTrue($conclusion->fresh()->report->is($report));
+    }
+
+    public function test_judge_is_null_without_a_conclusion(): void
+    {
+        $this->assertNull($this->newReport()->judge());
+    }
+
+    public function test_judge_is_up_to_date_after_concluding(): void
+    {
+        $report = $this->newReport();
+        $judge = User::create(['name' => 'Judge']);
+
+        $this->assertNull($report->judge());
+
+        $report->conclude(['conclusion' => 'Valid.'], $judge);
+
+        $this->assertTrue($report->judge()->is($judge));
+    }
+
     public function test_a_judge_with_a_custom_primary_key_is_stored(): void
     {
         $report = $this->newReport();
