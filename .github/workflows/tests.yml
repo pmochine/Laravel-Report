@@ -60,5 +60,17 @@ jobs:
           composer require "laravel/framework:^${{ matrix.laravel }}.0" --dev --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
+      - name: Show versions
+        run: |
+          php --version | head -n 1
+          composer show laravel/framework | grep '^versions'
+          composer show orchestra/testbench | grep '^versions'
+          vendor/bin/phpunit --version
+
+      # PHPUnit 13 needs PHP 8.4.1 or higher. Testbench 9 (Laravel 11) does not allow PHPUnit 13.
+      - name: Check that PHPUnit 13 runs
+        if: matrix.stability == 'prefer-stable' && matrix.laravel != '11' && (matrix.php == '8.4' || matrix.php == '8.5')
+        run: vendor/bin/phpunit --version | grep -q '^PHPUnit 13\.'
+
       - name: Run tests
         run: vendor/bin/phpunit
