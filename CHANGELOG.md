@@ -27,10 +27,10 @@ Version 4.0.0 stores the morph class, which is the alias from your morph map.
 If you use `Relation::morphMap()`, Eloquent loads the old rows and the new rows.
 But queries such as `whereMorphedTo()` compare with the alias, so they do not find the old rows.
 
-If you use `Relation::enforceMorphMap()`, Laravel refuses to load rows with a class name.
-Version 3.x did not work with an enforced morph map for this reason. Version 4.0.0 stores the alias.
+If you use `Relation::enforceMorphMap()`, Laravel 13.34 and later refuse to load rows with a class name.
+Older Laravel releases still load them.
 
-In both cases, update the old rows once in a migration:
+Update the old rows once in a migration. Then queries find them, and every Laravel version loads them:
 
 ```php
 DB::table('reports')->where('reporter_type', App\Models\User::class)->update(['reporter_type' => 'user']);

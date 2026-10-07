@@ -40,7 +40,7 @@ jobs:
     env:
       # Laravel 11 no longer gets security fixes, and Composer blocks releases with open advisories.
       # The tests must still install them to check the supported version range.
-      COMPOSER_NO_SECURITY_BLOCKING: 1
+      COMPOSER_POLICY_ADVISORIES_BLOCK: 0
 
     steps:
       - uses: actions/checkout@v7
