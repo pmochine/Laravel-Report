@@ -3,6 +3,7 @@
 namespace Pmochine\Tests\Report;
 
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\DB;
 use Pmochine\Report\Models\Conclusion;
 use Pmochine\Report\Models\Report;
 use Pmochine\Tests\Report\Fixtures\Member;
@@ -100,5 +101,50 @@ class ConclusionTest extends AbstractTestCase
         $conclusion = $report->conclude(['conclusion' => 'Valid.'], User::create(['name' => 'Judge']));
 
         $this->assertSame('user', $conclusion->fresh()->judge_type);
+    }
+
+    public function test_all_judges_lists_each_judge_once(): void
+    {
+        $ada = User::create(['name' => 'Ada']);
+        $grace = Member::create(['name' => 'Grace']);
+
+        $this->newReport()->conclude(['conclusion' => 'One'], $ada);
+        $this->newReport()->conclude(['conclusion' => 'Two'], $ada);
+        $this->newReport()->conclude(['conclusion' => 'Three'], $grace);
+
+        $judges = Report::allJudges();
+
+        $this->assertCount(2, $judges);
+        $this->assertTrue($judges[0]->is($ada));
+        $this->assertTrue($judges[1]->is($grace));
+    }
+
+    public function test_all_judges_skips_deleted_judges(): void
+    {
+        $ada = User::create(['name' => 'Ada']);
+        $grace = User::create(['name' => 'Grace']);
+
+        $this->newReport()->conclude(['conclusion' => 'One'], $ada);
+        $this->newReport()->conclude(['conclusion' => 'Two'], $grace);
+        $grace->delete();
+
+        $judges = Report::allJudges();
+
+        $this->assertCount(1, $judges);
+        $this->assertTrue($judges[0]->is($ada));
+    }
+
+    public function test_all_judges_does_not_query_once_per_conclusion(): void
+    {
+        $judges = [User::create(['name' => 'Ada']), User::create(['name' => 'Grace']), User::create(['name' => 'Linus'])];
+
+        foreach ($judges as $judge) {
+            $this->newReport()->conclude(['conclusion' => 'Valid.'], $judge);
+        }
+
+        DB::enableQueryLog();
+        Report::allJudges();
+
+        $this->assertCount(2, DB::getQueryLog());
     }
 }

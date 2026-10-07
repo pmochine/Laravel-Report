@@ -57,12 +57,11 @@ class Report extends Model
 
     public static function allJudges(): array
     {
-        $judges = [];
-
-        foreach (Conclusion::get() as $conclusion) {
-            $judges[] = $conclusion->judge;
-        }
-
-        return $judges;
+        return Conclusion::with('judge')->get()
+            ->pluck('judge')
+            ->filter()
+            ->unique(fn (Model $judge) => $judge->getMorphClass() . ':' . $judge->getKey())
+            ->values()
+            ->all();
     }
 }
