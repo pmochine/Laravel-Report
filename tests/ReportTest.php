@@ -120,4 +120,45 @@ class ReportTest extends AbstractTestCase
 
         $this->assertTrue($report->fresh()->reporter->is($user));
     }
+
+    public function test_is_reported_by_checks_reporter_and_reported_model(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        $other = Post::create(['title' => 'Other']);
+        $ada = User::create(['name' => 'Ada']);
+        $grace = User::create(['name' => 'Grace']);
+
+        $this->assertFalse($post->isReportedBy($ada));
+
+        $post->report(['reason' => 'Spam'], $ada);
+
+        $this->assertTrue($post->isReportedBy($ada));
+        $this->assertFalse($post->isReportedBy($grace));
+        $this->assertFalse($other->isReportedBy($ada));
+    }
+
+    public function test_is_reported_by_compares_type_and_key(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+        $member = Member::create(['name' => 'Grace']);
+
+        $this->assertSame($user->getKey(), $member->getKey());
+
+        $post->report(['reason' => 'Spam'], $member);
+
+        $this->assertTrue($post->isReportedBy($member));
+        $this->assertFalse($post->isReportedBy($user));
+    }
+
+    public function test_is_reported_by_uses_the_morph_map(): void
+    {
+        Relation::enforceMorphMap(['post' => Post::class, 'user' => User::class]);
+
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+        $post->report(['reason' => 'Spam'], $user);
+
+        $this->assertTrue($post->isReportedBy($user));
+    }
 }

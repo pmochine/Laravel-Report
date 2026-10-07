@@ -58,6 +58,7 @@ Schema::table('reports_conclusions', function (Blueprint $table) {
 - `Conclusion::report()` returns the report of a conclusion.
 - `Report::conclusions()` returns all conclusions of a report.
 - The query scopes `Report::pending()` and `Report::concluded()` find reports without and with a conclusion.
+- `isReportedBy()` in the trait `HasReports` checks whether a given model already reported the model.
 - A test suite with Orchestra Testbench for Laravel 11, 12 and 13.
 - A GitHub Actions workflow for PHP 8.2 to 8.5.
 

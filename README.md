@@ -72,6 +72,17 @@ $report = $post->report([
 ], $user);
 ```
 
+### Allow one report per user
+
+The package accepts more than one report from the same reporter.
+To allow only one, use `isReportedBy()` before you call `report()`:
+
+```php
+if (! $post->isReportedBy($user)) {
+    $post->report(['reason' => 'Spam'], $user);
+}
+```
+
 ### Read reports
 
 ```php

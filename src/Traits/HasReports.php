@@ -32,4 +32,9 @@ trait HasReports
 
         return $report;
     }
+
+    public function isReportedBy(Model $reporter): bool
+    {
+        return $this->reports()->whereMorphedTo('reporter', $reporter)->exists();
+    }
 }
