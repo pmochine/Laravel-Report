@@ -37,8 +37,9 @@ php artisan migrate
 
 The migration creates the tables `reports` and `reports_conclusions`.
 
-If you update from 3.x, do not publish the migration again.
-Your tables stay as they are. Read [CHANGELOG.md](CHANGELOG.md) for the upgrade steps.
+If the migration is already published, `vendor:publish` keeps your file and adds no second migration.
+This also applies to the file `create_reports_table.php` from version 3.x.
+If you update from 3.x, read [CHANGELOG.md](CHANGELOG.md) for the upgrade steps.
 
 ## Usage
 

@@ -13,7 +13,7 @@ It also renames one relation.
 
 1. Update your application to PHP 8.2 and Laravel 11 or higher. Laravel 13 needs PHP 8.3.
 2. Run `composer require pmochine/laravel-report:^4.0`.
-3. Do not publish the migration again. Your tables stay as they are.
+3. You do not need to publish the migration again. Your tables stay as they are.
 4. Replace calls to `$conclusion->conclusion()` with `$conclusion->report()`.
 5. If you use a morph map, read the section "Morph maps" below.
 6. If you want conclusions without `action_taken`, add the migration from the section "Optional action_taken" below.
@@ -66,7 +66,8 @@ Schema::table('reports_conclusions', function (Blueprint $table) {
 - The `$data` parameter of `report()` and `conclude()` has the type `array`.
 - `Report::conclusion()` returns the latest conclusion of a report. In 3.x, a second `conclude()` added a row, and the database decided which conclusion the relation returned.
 - `Report::allJudges()` returns each judge once and skips judges that no longer exist. It loads all judges with one query per judge type.
-- The migration is an anonymous class with a date prefix. When you publish it, Laravel gives the file the current date.
+- The migration is an anonymous class. The published file gets the current date as prefix, so it runs before your later migrations.
+- If the migration is already published, `vendor:publish` keeps the file and adds no second migration. This includes `create_reports_table.php` from 3.x.
 - The migration uses `id()` and `foreignId()` and drops the tables in reverse order.
 - The models define their casts in a `casts()` method.
 
