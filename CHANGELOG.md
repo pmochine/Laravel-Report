@@ -69,6 +69,7 @@ Schema::table('reports_conclusions', function (Blueprint $table) {
 ### Changed
 
 - The package needs PHP 8.2 or higher and Laravel 11, 12 or 13.
+- The package requires `illuminate/queue` for the events. Laravel applications already have it, because `laravel/framework` contains it.
 - `report()` and `conclude()` store the reporter and the judge with `associate()`. The stored type is the morph class, and the stored ID is the primary key.
 - The `$data` parameter of `report()` and `conclude()` has the type `array`.
 - `Report::conclusion()` returns the latest conclusion of a report. In 3.x, a second `conclude()` added a row, and the database decided which conclusion the relation returned.

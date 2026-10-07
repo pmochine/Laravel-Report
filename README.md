@@ -182,6 +182,7 @@ Event::listen(function (ReportCreated $event) {
 
 The report of a conclusion is `$event->conclusion->report`.
 Updates of existing reports or conclusions dispatch no event.
+The events use `SerializesModels`, so a queued listener loads the current model from the database.
 
 ### Morph maps
 

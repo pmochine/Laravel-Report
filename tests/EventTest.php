@@ -2,6 +2,7 @@
 
 namespace Pmochine\Tests\Report;
 
+use Illuminate\Events\CallQueuedListener;
 use Illuminate\Support\Facades\Event;
 use Pmochine\Report\Events\ReportConcluded;
 use Pmochine\Report\Events\ReportCreated;
@@ -73,5 +74,56 @@ class EventTest extends AbstractTestCase
 
         $this->assertSame(0, Conclusion::count());
         Event::assertNotDispatched(ReportConcluded::class);
+    }
+
+    public function test_a_queued_report_created_listener_gets_a_fresh_report(): void
+    {
+        $payload = null;
+        Event::listen(ReportCreated::class, function (ReportCreated $event) use (&$payload) {
+            $payload = $this->queuedPayload($event);
+        });
+
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+        $report = $post->report(['reason' => 'Spam'], $user);
+        $report->update(['reason' => 'Reviewed']);
+
+        $event = $this->runQueuedPayload($payload);
+        $event->report->update(['meta' => ['notified' => true]]);
+
+        $this->assertSame('Reviewed', $report->fresh()->reason);
+        $this->assertSame(['notified' => true], $report->fresh()->meta);
+    }
+
+    public function test_a_queued_report_concluded_listener_gets_a_fresh_conclusion(): void
+    {
+        $payload = null;
+        Event::listen(ReportConcluded::class, function (ReportConcluded $event) use (&$payload) {
+            $payload = $this->queuedPayload($event);
+        });
+
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+        $conclusion = $post->report(['reason' => 'Spam'], $user)->conclude(['conclusion' => 'Valid.'], $user);
+        $conclusion->update(['conclusion' => 'Changed by a moderator']);
+
+        $event = $this->runQueuedPayload($payload);
+        $event->conclusion->update(['meta' => ['notified' => true]]);
+
+        $this->assertSame('Changed by a moderator', $conclusion->fresh()->conclusion);
+        $this->assertSame(['notified' => true], $conclusion->fresh()->meta);
+    }
+
+    /**
+     * Serialize the event the way Laravel stores a queued listener job.
+     */
+    private function queuedPayload(object $event): string
+    {
+        return serialize(new CallQueuedListener('App\\Listeners\\NotifyModerators', 'handle', [$event]));
+    }
+
+    private function runQueuedPayload(string $payload): object
+    {
+        return unserialize($payload)->data[0];
     }
 }

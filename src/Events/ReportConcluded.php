@@ -2,6 +2,7 @@
 
 namespace Pmochine\Report\Events;
 
+use Illuminate\Queue\SerializesModels;
 use Pmochine\Report\Models\Conclusion;
 
 /**
@@ -9,6 +10,8 @@ use Pmochine\Report\Models\Conclusion;
  */
 class ReportConcluded
 {
+    use SerializesModels;
+
     public function __construct(public Conclusion $conclusion)
     {
     }
