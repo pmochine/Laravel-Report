@@ -173,4 +173,20 @@ class ConclusionTest extends AbstractTestCase
 
         $this->assertTrue($report->fresh()->judge()->is($judge));
     }
+
+    public function test_the_latest_conclusion_wins_in_every_loading_path(): void
+    {
+        $report = $this->newReport();
+        $first = User::create(['name' => 'First']);
+        $second = User::create(['name' => 'Second']);
+
+        $report->conclude(['conclusion' => 'One'], $first);
+        $report->conclude(['conclusion' => 'Two'], $second);
+
+        $this->assertSame(2, Conclusion::count());
+        $this->assertTrue($report->judge()->is($second));
+        $this->assertTrue($report->fresh()->judge()->is($second));
+        $this->assertTrue(Report::with('conclusion.judge')->find($report->id)->judge()->is($second));
+        $this->assertSame('Two', Report::with('conclusion')->get()->first()->conclusion->conclusion);
+    }
 }

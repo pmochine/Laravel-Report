@@ -92,10 +92,13 @@ $report->conclude([
 ], $user);
 ```
 
+If you conclude a report again, the package adds a second conclusion and keeps the first one.
+`$report->conclusion` returns the latest conclusion.
+
 ### Read conclusions and judges
 
 ```php
-$report->conclusion;          // The conclusion, or null
+$report->conclusion;          // The latest conclusion, or null
 $report->judge();             // Shortcut for $report->conclusion->judge, null without a conclusion
 $conclusion->report;          // The report of a conclusion
 Report::allJudges();          // Each model that concluded a report, once

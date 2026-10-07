@@ -37,7 +37,7 @@ class Report extends Model
 
     public function conclusion(): HasOne
     {
-        return $this->hasOne(Conclusion::class);
+        return $this->hasOne(Conclusion::class)->latestOfMany();
     }
 
     public function judge(): ?Model

@@ -64,6 +64,7 @@ Schema::table('reports_conclusions', function (Blueprint $table) {
 - The package needs PHP 8.2 or higher and Laravel 11, 12 or 13.
 - `report()` and `conclude()` store the reporter and the judge with `associate()`. The stored type is the morph class, and the stored ID is the primary key.
 - The `$data` parameter of `report()` and `conclude()` has the type `array`.
+- `Report::conclusion()` returns the latest conclusion of a report. In 3.x, a second `conclude()` added a row, and the database decided which conclusion the relation returned.
 - `Report::allJudges()` returns each judge once and skips judges that no longer exist. It loads all judges with one query per judge type.
 - The migration is an anonymous class with a date prefix. When you publish it, Laravel gives the file the current date.
 - The migration uses `id()` and `foreignId()` and drops the tables in reverse order.
