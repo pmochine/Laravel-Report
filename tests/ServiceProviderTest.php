@@ -28,6 +28,9 @@ class ServiceProviderTest extends AbstractTestCase
     {
         parent::defineEnvironment($app);
 
+        // The provider chooses the file name when it boots, so the clock must be fixed before that.
+        $this->travelTo('2026-10-07 12:00:00');
+
         $app->useDatabasePath($this->databasePath);
     }
 
@@ -54,19 +57,17 @@ class ServiceProviderTest extends AbstractTestCase
 
         $files = $this->publishedMigrations();
 
-        $this->assertCount(1, $files);
-        $this->assertMatchesRegularExpression('/^\d{4}_\d{2}_\d{2}_\d{6}_create_reports_table\.php$/', $files[0]);
-        $this->assertStringStartsWith(now()->format('Y_m_d_'), $files[0]);
+        $this->assertSame(['2026_10_07_120000_create_reports_table.php'], $files);
     }
 
     public function test_publishing_twice_keeps_one_migration(): void
     {
         $this->publish();
-        $this->bootProviderAgain();
         $this->travel(5)->seconds();
+        $this->bootProviderAgain();
         $this->publish();
 
-        $this->assertCount(1, $this->publishedMigrations());
+        $this->assertSame(['2026_10_07_120000_create_reports_table.php'], $this->publishedMigrations());
     }
 
     public function test_publishing_with_force_replaces_the_published_migration(): void
@@ -75,8 +76,8 @@ class ServiceProviderTest extends AbstractTestCase
         $first = $this->publishedMigrations();
         file_put_contents($this->databasePath . '/migrations/' . $first[0], '<?php // changed');
 
-        $this->bootProviderAgain();
         $this->travel(5)->seconds();
+        $this->bootProviderAgain();
         $this->publish(['--force' => true]);
 
         $this->assertSame($first, $this->publishedMigrations());
