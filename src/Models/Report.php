@@ -44,12 +44,10 @@ class Report extends Model
         return $this->conclusion->judge;
     }
 
-    public function conclude($data, Model $judge): Conclusion
+    public function conclude(array $data, Model $judge): Conclusion
     {
-        $conclusion = (new Conclusion())->fill(array_merge($data, [
-            'judge_id' => $judge->id,
-            'judge_type' => get_class($judge),
-        ]));
+        $conclusion = (new Conclusion())->fill($data);
+        $conclusion->judge()->associate($judge);
 
         $this->conclusion()->save($conclusion);
 

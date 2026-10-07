@@ -2,8 +2,10 @@
 
 namespace Pmochine\Tests\Report;
 
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Pmochine\Report\Models\Conclusion;
 use Pmochine\Report\Models\Report;
+use Pmochine\Tests\Report\Fixtures\Member;
 use Pmochine\Tests\Report\Fixtures\Post;
 use Pmochine\Tests\Report\Fixtures\User;
 
@@ -50,5 +52,27 @@ class ConclusionTest extends AbstractTestCase
         $conclusion = $report->conclude(['conclusion' => 'Not valid.'], User::create(['name' => 'Judge']));
 
         $this->assertNull($conclusion->fresh()->action_taken);
+    }
+
+    public function test_a_judge_with_a_custom_primary_key_is_stored(): void
+    {
+        $report = $this->newReport();
+        Member::create(['name' => 'Filler']);
+        $judge = Member::create(['name' => 'Grace']);
+
+        $report->conclude(['conclusion' => 'Valid.'], $judge);
+
+        $this->assertTrue($report->fresh()->judge()->is($judge));
+    }
+
+    public function test_the_morph_map_alias_of_the_judge_is_stored(): void
+    {
+        Relation::enforceMorphMap(['post' => Post::class, 'user' => User::class]);
+
+        $report = $this->newReport();
+
+        $conclusion = $report->conclude(['conclusion' => 'Valid.'], User::create(['name' => 'Judge']));
+
+        $this->assertSame('user', $conclusion->fresh()->judge_type);
     }
 }

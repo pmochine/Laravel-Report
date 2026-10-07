@@ -2,6 +2,9 @@
 
 namespace Pmochine\Tests\Report;
 
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Pmochine\Report\Models\Report;
+use Pmochine\Tests\Report\Fixtures\Member;
 use Pmochine\Tests\Report\Fixtures\Post;
 use Pmochine\Tests\Report\Fixtures\User;
 
@@ -34,6 +37,45 @@ class ReportTest extends AbstractTestCase
         $user = User::create(['name' => 'Ada']);
 
         $report = $post->report(['reason' => 'Spam'], $user);
+
+        $this->assertTrue($report->fresh()->reporter->is($user));
+    }
+
+    public function test_a_reporter_with_a_custom_primary_key_is_stored(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        Member::create(['name' => 'Filler']);
+        $member = Member::create(['name' => 'Grace']);
+
+        $report = $post->report(['reason' => 'Spam'], $member);
+
+        $this->assertSame($member->member_id, $report->fresh()->reporter_id);
+        $this->assertTrue($report->fresh()->reporter->is($member));
+    }
+
+    public function test_the_morph_map_alias_of_the_reporter_is_stored(): void
+    {
+        Relation::enforceMorphMap(['post' => Post::class, 'user' => User::class]);
+
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+
+        $report = $post->report(['reason' => 'Spam'], $user);
+
+        $this->assertDatabaseHas('reports', [
+            'id' => $report->id,
+            'reportable_type' => 'post',
+            'reporter_type' => 'user',
+        ]);
+        $this->assertTrue(Report::whereMorphedTo('reporter', $user)->first()->is($report));
+    }
+
+    public function test_the_reporter_in_the_data_cannot_replace_the_given_reporter(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+
+        $report = $post->report(['reason' => 'Spam', 'reporter_id' => 999, 'reporter_type' => Post::class], $user);
 
         $this->assertTrue($report->fresh()->reporter->is($user));
     }
