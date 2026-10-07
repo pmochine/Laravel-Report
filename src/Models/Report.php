@@ -17,10 +17,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Arr;
+use Pmochine\Report\Events\ReportCreated;
 
 class Report extends Model
 {
     protected $guarded = ['id', 'created_at', 'updated_at'];
+
+    protected $dispatchesEvents = ['created' => ReportCreated::class];
 
     protected function casts(): array
     {

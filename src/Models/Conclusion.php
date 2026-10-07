@@ -14,12 +14,15 @@ namespace Pmochine\Report\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Pmochine\Report\Events\ReportConcluded;
 
 class Conclusion extends Model
 {
     protected $table = 'reports_conclusions';
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
+
+    protected $dispatchesEvents = ['created' => ReportConcluded::class];
 
     protected function casts(): array
     {

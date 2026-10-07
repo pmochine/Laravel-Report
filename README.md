@@ -153,6 +153,27 @@ $report->conclusions;                      // All conclusions of the report
 
 The class `Report` is `Pmochine\Report\Models\Report`.
 
+### Events
+
+The package dispatches two events, for example to notify your moderators:
+
+| Event                                    | Dispatched after                 | Property       |
+|------------------------------------------|----------------------------------|----------------|
+| `Pmochine\Report\Events\ReportCreated`    | a new report is saved            | `$report`      |
+| `Pmochine\Report\Events\ReportConcluded`  | a new conclusion is saved        | `$conclusion`  |
+
+```php
+use Illuminate\Support\Facades\Event;
+use Pmochine\Report\Events\ReportCreated;
+
+Event::listen(function (ReportCreated $event) {
+    // For example, send a notification about $event->report
+});
+```
+
+The report of a conclusion is `$event->conclusion->report`.
+Updates of existing reports or conclusions dispatch no event.
+
 ### Morph maps
 
 The package stores the morph class of each model.

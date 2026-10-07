@@ -60,6 +60,7 @@ Schema::table('reports_conclusions', function (Blueprint $table) {
 - The query scopes `Report::pending()` and `Report::concluded()` find reports without and with a conclusion.
 - `isReportedBy()` in the trait `HasReports` checks whether a given model already reported the model.
 - The trait `SubmitsReports` adds the relation `submittedReports()` to the model that sends reports.
+- The events `ReportCreated` and `ReportConcluded`, for example to notify moderators about a new report.
 - A test suite with Orchestra Testbench for Laravel 11, 12 and 13.
 - A GitHub Actions workflow for PHP 8.2 to 8.5.
 
