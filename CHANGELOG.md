@@ -3,7 +3,7 @@
 This file lists the changes in each release of `pmochine/laravel-report`.
 The project uses [Semantic Versioning](https://semver.org).
 
-## 4.0.0 (unreleased)
+## 4.0.0 (2026-10-07)
 
 Version 4.0.0 supports Laravel 11, 12 and 13.
 It is a major release because it removes support for old Laravel and PHP versions.
