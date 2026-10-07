@@ -91,6 +91,30 @@ $report->reportable;      // The reported model
 $report->reporter;        // The model that sent the report
 ```
 
+### Reports sent by a model
+
+Add the `SubmitsReports` trait to the model that sends reports, usually the user:
+
+```php
+use Pmochine\Report\Traits\SubmitsReports;
+
+class User extends Authenticatable
+{
+    use SubmitsReports;
+}
+```
+
+Then you can read and count the reports of each user:
+
+```php
+$user->submittedReports;                       // All reports the user sent
+$user->submittedReports()->pending()->count(); // Open reports of the user
+User::withCount('submittedReports')->get();    // Adds submitted_reports_count
+```
+
+A model can use `HasReports` and `SubmitsReports` together.
+Then `reports()` returns the reports about the model, and `submittedReports()` returns the reports that it sent.
+
 ### Conclude a report
 
 The second argument is the judge, the model that made the decision.
