@@ -14,6 +14,7 @@ namespace Pmochine\Report\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Arr;
 
 class Report extends Model
 {
@@ -46,7 +47,7 @@ class Report extends Model
 
     public function conclude(array $data, Model $judge): Conclusion
     {
-        $conclusion = (new Conclusion())->fill($data);
+        $conclusion = (new Conclusion())->fill(Arr::except($data, ['judge_id', 'judge_type']));
         $conclusion->judge()->associate($judge);
 
         $this->conclusion()->save($conclusion);

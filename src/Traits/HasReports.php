@@ -14,6 +14,7 @@ namespace Pmochine\Report\Traits;
 use Pmochine\Report\Models\Report;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Arr;
 
 trait HasReports
 {
@@ -24,7 +25,7 @@ trait HasReports
 
     public function report(array $data, Model $reporter): Report
     {
-        $report = (new Report())->fill($data);
+        $report = (new Report())->fill(Arr::except($data, ['reporter_id', 'reporter_type']));
         $report->reporter()->associate($reporter);
 
         $this->reports()->save($report);

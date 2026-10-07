@@ -98,4 +98,26 @@ class ReportTest extends AbstractTestCase
 
         $this->assertTrue($report->fresh()->reporter->is($user));
     }
+
+    public function test_a_reporter_type_in_the_data_does_not_change_the_stored_key(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+        $user->setAttribute('member_id', 2);
+
+        $report = $post->report(['reason' => 'Spam', 'reporter_type' => Member::class], $user);
+
+        $this->assertSame(User::class, $report->fresh()->reporter_type);
+        $this->assertSame($user->id, $report->fresh()->reporter_id);
+    }
+
+    public function test_an_unknown_reporter_type_in_the_data_is_ignored(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+
+        $report = $post->report(['reason' => 'Spam', 'reporter_type' => 'missing-class'], $user);
+
+        $this->assertTrue($report->fresh()->reporter->is($user));
+    }
 }

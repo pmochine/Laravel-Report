@@ -147,4 +147,30 @@ class ConclusionTest extends AbstractTestCase
 
         $this->assertCount(2, DB::getQueryLog());
     }
+
+    public function test_a_judge_type_in_the_data_does_not_change_the_stored_key(): void
+    {
+        $report = $this->newReport();
+        $judge = User::create(['name' => 'Judge']);
+        $judge->setAttribute('member_id', 1);
+
+        $conclusion = $report->conclude([
+            'conclusion' => 'Valid.',
+            'judge_type' => Member::class,
+            'judge_id' => 999,
+        ], $judge);
+
+        $this->assertSame(User::class, $conclusion->fresh()->judge_type);
+        $this->assertSame($judge->id, $conclusion->fresh()->judge_id);
+    }
+
+    public function test_an_unknown_judge_type_in_the_data_is_ignored(): void
+    {
+        $report = $this->newReport();
+        $judge = User::create(['name' => 'Judge']);
+
+        $report->conclude(['conclusion' => 'Valid.', 'judge_type' => 'missing-class'], $judge);
+
+        $this->assertTrue($report->fresh()->judge()->is($judge));
+    }
 }
