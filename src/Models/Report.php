@@ -50,8 +50,9 @@ class Report extends Model
         $conclusion = (new Conclusion())->fill(Arr::except($data, ['judge_id', 'judge_type']));
         $conclusion->judge()->associate($judge);
 
-        $this->conclusion()->save($conclusion);
-        $this->setRelation('conclusion', $conclusion);
+        if ($this->conclusion()->save($conclusion)) {
+            $this->setRelation('conclusion', $conclusion);
+        }
 
         return $conclusion;
     }

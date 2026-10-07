@@ -189,4 +189,31 @@ class ConclusionTest extends AbstractTestCase
         $this->assertTrue(Report::with('conclusion.judge')->find($report->id)->judge()->is($second));
         $this->assertSame('Two', Report::with('conclusion')->get()->first()->conclusion->conclusion);
     }
+
+    public function test_a_cancelled_first_conclusion_leaves_the_report_without_a_judge(): void
+    {
+        $report = $this->newReport();
+        Conclusion::creating(fn () => false);
+
+        $this->assertNull($report->judge());
+        $report->conclude(['conclusion' => 'Valid.'], User::create(['name' => 'Judge']));
+
+        $this->assertSame(0, Conclusion::count());
+        $this->assertNull($report->judge());
+        $this->assertNull($report->fresh()->judge());
+    }
+
+    public function test_a_cancelled_second_conclusion_keeps_the_first_judge(): void
+    {
+        $report = $this->newReport();
+        $first = User::create(['name' => 'First']);
+        $report->conclude(['conclusion' => 'One'], $first);
+
+        Conclusion::creating(fn () => false);
+        $report->conclude(['conclusion' => 'Two'], User::create(['name' => 'Second']));
+
+        $this->assertSame(1, Conclusion::count());
+        $this->assertTrue($report->judge()->is($first));
+        $this->assertTrue($report->fresh()->judge()->is($first));
+    }
 }
