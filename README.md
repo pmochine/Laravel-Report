@@ -1,32 +1,58 @@
-# Laravel Report 📢
+# Laravel Report
 
-[![PHP from Packagist](https://img.shields.io/packagist/php-v/pmochine/laravel-report.svg?style=flat-square)]()
-[![Latest Version](https://img.shields.io/github/release/pmochine/Laravel-Report.svg?style=flat-square)](https://github.com/pmochine/Laravel-Report/releases)
+[![Tests](https://github.com/pmochine/Laravel-Report/actions/workflows/tests.yml/badge.svg)](https://github.com/pmochine/Laravel-Report/actions/workflows/tests.yml)
+[![Latest Version](https://img.shields.io/packagist/v/pmochine/laravel-report.svg?style=flat-square)](https://packagist.org/packages/pmochine/laravel-report)
+[![PHP from Packagist](https://img.shields.io/packagist/php-v/pmochine/laravel-report.svg?style=flat-square)](https://packagist.org/packages/pmochine/laravel-report)
+
+Laravel Report adds reports to Eloquent models.
+Your users can report a model, for example a post or a comment.
+A report stores the reported model, the model that sent the report, a reason and optional meta data.
+You can then add a conclusion to the report and record which model made the decision.
+
+## Requirements
+
+| Package version | Laravel      | PHP                                  | Status          |
+|-----------------|--------------|--------------------------------------|-----------------|
+| 4.x             | 11, 12, 13   | 8.2 or higher, 8.3 or higher for 13  | Maintained      |
+| 3.x             | 5.4 to 8     | 7.2 or higher                        | Not maintained  |
+
+Laravel 11 gets no more security fixes since March 12, 2026.
+Version 4.x still supports it, so that you can update this package before you update Laravel.
 
 ## Installation
 
-Require this package, with [Composer](https://getcomposer.org/), in the root directory of your project.
+Install the package with [Composer](https://getcomposer.org/):
 
-``` bash
-$ composer require pmochine/laravel-report
+```bash
+composer require pmochine/laravel-report
 ```
 
-To get started, you'll need to publish the vendor assets and migrate:
+Laravel finds the service provider automatically.
+Publish the migration and run it:
 
+```bash
+php artisan vendor:publish --provider="Pmochine\Report\ReportServiceProvider"
+php artisan migrate
 ```
-php artisan vendor:publish --provider="Pmochine\Report\ReportServiceProvider" && php artisan migrate
-```
+
+The migration creates the tables `reports` and `reports_conclusions`.
+
+If you update from 3.x, do not publish the migration again.
+Your tables stay as they are. Read [CHANGELOG.md](CHANGELOG.md) for the upgrade steps.
 
 ## Usage
 
-## Setup a Model
-``` php
+### Make a model reportable
+
+Add the `HasReports` trait to each model that users can report:
+
+```php
 <?php
 
-namespace App;
+namespace App\Models;
 
-use Pmochine\Report\Traits\HasReports;
 use Illuminate\Database\Eloquent\Model;
+use Pmochine\Report\Traits\HasReports;
 
 class Post extends Model
 {
@@ -34,57 +60,72 @@ class Post extends Model
 }
 ```
 
-## Examples
+### Report a model
 
-#### The User Model reports the Post Model
-``` php
-$post->report([
-    'reason' => \Str::random(10),
-    'meta' => ['some more optional data, can be notes or something'],
+The second argument is the model that sends the report, usually the user:
+
+```php
+$report = $post->report([
+    'reason' => 'Spam',
+    'meta' => ['comment' => 'Optional data, for example notes'],
 ], $user);
 ```
 
-#### Create a conclusion for a Report and add the User Model as "judge" (useful to later see who or what came to this conclusion)
-``` php
+### Read reports
+
+```php
+$post->reports;           // All reports for the post
+$report->reportable;      // The reported model
+$report->reporter;        // The model that sent the report
+```
+
+### Conclude a report
+
+The second argument is the judge, the model that made the decision.
+The keys `action_taken` and `meta` are optional:
+
+```php
 $report->conclude([
-    'conclusion' => 'Your report was valid. Thanks! We\'ve taken action and removed the entry.',
-    'action_taken' => 'Record has been deleted.' // This is optional but can be useful to see what happend to the record
-    'meta' => ['some more optional data, can be notes or something'],
+    'conclusion' => 'Your report was valid. We removed the post.',
+    'action_taken' => 'Record deleted.',
+    'meta' => ['comment' => 'Optional data, for example notes'],
 ], $user);
 ```
 
-#### Get the conclusion for the Report Model
-``` php
-$report->conclusion;
+### Read conclusions and judges
+
+```php
+$report->conclusion;          // The conclusion, or null
+$report->judge();             // Shortcut for $report->conclusion->judge, null without a conclusion
+$conclusion->report;          // The report of a conclusion
+Report::allJudges();          // Each model that concluded a report, once
 ```
 
-#### Get the judge for the Report Model (only available if there is a conclusion)
-``` php
-$report->judge(); // Just a shortcut for $report->conclusion->judge
-```
+The class `Report` is `Pmochine\Report\Models\Report`.
 
-#### Get an array with all Judges that have ever "judged" something
-``` php
-Report::allJudges();
-```
+### Morph maps
+
+The package stores the morph class of each model.
+If your application uses a morph map, the tables contain your aliases instead of class names.
 
 ## Testing
 
-``` bash
-$ phpunit
+```bash
+composer test
 ```
 
 ## Security
 
-If you discover any security related issues, please don't email me. I'm afraid 😱. avidofood@protonmail.com
+If you find a security issue, send an email to avidofood@protonmail.com.
+Do not open a public issue for it.
 
 ## Credits
 
-Now comes the best part! 😍
-This package is based on
+This package is based on [Brian Faust's Laravel-Reportable](https://github.com/faustbrian/Laravel-Reportable).
 
-- [Brian Faust's Laravel-Reportable](https://github.com/faustbrian/Laravel-Reportable)
-- [All Contributors](../../contributors)
+- [Brian Faust](https://github.com/faustbrian)
+- [Philipp Mochine](https://github.com/pmochine)
+- [All contributors](../../contributors)
 
 ## License
 
