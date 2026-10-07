@@ -22,10 +22,22 @@ return new class extends Migration
             $table->id('member_id');
             $table->string('name');
         });
+
+        Schema::create('uuid_users', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('name');
+        });
+
+        Schema::create('uuid_posts', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('title');
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('uuid_posts');
+        Schema::dropIfExists('uuid_users');
         Schema::dropIfExists('members');
         Schema::dropIfExists('posts');
         Schema::dropIfExists('users');

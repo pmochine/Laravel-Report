@@ -41,6 +41,15 @@ If the migration is already published, `vendor:publish` keeps your file and adds
 This also applies to the file `create_reports_table.php` from version 3.x.
 If you update from 3.x, read [CHANGELOG.md](CHANGELOG.md) for the upgrade steps.
 
+### UUID and ULID keys
+
+The migration uses `morphs()`, so the ID columns hold integers by default.
+If all your models use UUID keys, call `Schema::morphUsingUuids()` in the `boot()` method of a service provider.
+Do this before you run the migration. For ULID keys, call `Schema::morphUsingUlids()`.
+
+If your models use different key types, edit the published migration.
+For example, replace `$table->morphs('reportable')` with `$table->uuidMorphs('reportable')`.
+
 ## Usage
 
 ### Make a model reportable

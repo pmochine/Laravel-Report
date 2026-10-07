@@ -61,6 +61,7 @@ Schema::table('reports_conclusions', function (Blueprint $table) {
 - `isReportedBy()` in the trait `HasReports` checks whether a given model already reported the model.
 - The trait `SubmitsReports` adds the relation `submittedReports()` to the model that sends reports.
 - The events `ReportCreated` and `ReportConcluded`, for example to notify moderators about a new report.
+- The README explains how to use the package with UUID or ULID keys.
 - A test suite with Orchestra Testbench for Laravel 11, 12 and 13.
 - A GitHub Actions workflow for PHP 8.2 to 8.5.
 
