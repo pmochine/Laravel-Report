@@ -8,6 +8,7 @@ The project uses [Semantic Versioning](https://semver.org).
 Version 4.0.0 supports Laravel 11, 12 and 13.
 It is a major release because it removes support for old Laravel and PHP versions.
 It also renames one relation.
+New in 4.0.0 are query scopes for open reports, a check for earlier reports, a trait for reporters and two events.
 
 ### Upgrade from 3.x
 
