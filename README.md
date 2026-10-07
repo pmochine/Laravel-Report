@@ -96,10 +96,11 @@ The check does not lock the table, so two requests at the same moment can both p
 For a strict rule, add a unique index to the published migration:
 
 ```php
-$table->unique(['reportable_type', 'reportable_id', 'reporter_type', 'reporter_id']);
+$table->unique(['reportable_type', 'reportable_id', 'reporter_type', 'reporter_id'], 'reports_reporter_unique');
 ```
 
 Then a second report from the same reporter fails with `Illuminate\Database\UniqueConstraintViolationException`.
+Keep the short index name. The name that Laravel makes up has 70 characters, and MySQL allows only 64.
 
 ### Read reports
 

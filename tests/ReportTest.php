@@ -168,8 +168,13 @@ class ReportTest extends AbstractTestCase
     public function test_the_unique_index_from_the_readme_stops_a_second_report(): void
     {
         Schema::table('reports', function (Blueprint $table) {
-            $table->unique(['reportable_type', 'reportable_id', 'reporter_type', 'reporter_id']);
+            $table->unique(['reportable_type', 'reportable_id', 'reporter_type', 'reporter_id'], 'reports_reporter_unique');
         });
+
+        // MySQL allows index names with at most 64 characters.
+        foreach (Schema::getIndexes('reports') as $index) {
+            $this->assertLessThanOrEqual(64, strlen($index['name']), $index['name']);
+        }
 
         $post = Post::create(['title' => 'Hello']);
         $user = User::create(['name' => 'Ada']);
