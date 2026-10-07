@@ -14,6 +14,7 @@ namespace Pmochine\Report\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Pmochine\Report\Events\ReportConcluded;
 
 class Conclusion extends Model
 {
@@ -21,9 +22,14 @@ class Conclusion extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
-    protected $casts = ['meta' => 'array'];
+    protected $dispatchesEvents = ['created' => ReportConcluded::class];
 
-    public function conclusion(): BelongsTo
+    protected function casts(): array
+    {
+        return ['meta' => 'array'];
+    }
+
+    public function report(): BelongsTo
     {
         return $this->belongsTo(Report::class);
     }

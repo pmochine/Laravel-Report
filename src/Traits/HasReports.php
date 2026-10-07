@@ -14,6 +14,7 @@ namespace Pmochine\Report\Traits;
 use Pmochine\Report\Models\Report;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Arr;
 
 trait HasReports
 {
@@ -22,15 +23,18 @@ trait HasReports
         return $this->morphMany(Report::class, 'reportable');
     }
 
-    public function report($data, Model $reporter): Report
+    public function report(array $data, Model $reporter): Report
     {
-        $report = (new Report())->fill(array_merge($data, [
-            'reporter_id' => $reporter->id,
-            'reporter_type' => get_class($reporter),
-        ]));
+        $report = (new Report())->fill(Arr::except($data, ['reporter_id', 'reporter_type']));
+        $report->reporter()->associate($reporter);
 
         $this->reports()->save($report);
 
         return $report;
+    }
+
+    public function isReportedBy(Model $reporter): bool
+    {
+        return $this->reports()->whereMorphedTo('reporter', $reporter)->exists();
     }
 }

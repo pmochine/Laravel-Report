@@ -1,0 +1,188 @@
+<?php
+
+namespace Pmochine\Tests\Report;
+
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\Schema;
+use Pmochine\Report\Models\Report;
+use Pmochine\Tests\Report\Fixtures\Member;
+use Pmochine\Tests\Report\Fixtures\Post;
+use Pmochine\Tests\Report\Fixtures\User;
+
+class ReportTest extends AbstractTestCase
+{
+    public function test_a_model_can_be_reported(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+
+        $report = $post->report(['reason' => 'Spam', 'meta' => ['note' => 'first']], $user);
+
+        $this->assertTrue($report->exists);
+        $this->assertDatabaseHas('reports', [
+            'id' => $report->id,
+            'reportable_type' => Post::class,
+            'reportable_id' => $post->id,
+            'reporter_type' => User::class,
+            'reporter_id' => $user->id,
+            'reason' => 'Spam',
+        ]);
+        $this->assertSame(['note' => 'first'], $report->fresh()->meta);
+        $this->assertTrue($post->reports()->first()->is($report));
+        $this->assertTrue($report->fresh()->reportable->is($post));
+    }
+
+    public function test_a_report_returns_its_reporter(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+
+        $report = $post->report(['reason' => 'Spam'], $user);
+
+        $this->assertTrue($report->fresh()->reporter->is($user));
+    }
+
+    public function test_a_reporter_with_a_custom_primary_key_is_stored(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        Member::create(['name' => 'Filler']);
+        $member = Member::create(['name' => 'Grace']);
+
+        $report = $post->report(['reason' => 'Spam'], $member);
+
+        $this->assertSame($member->member_id, $report->fresh()->reporter_id);
+        $this->assertTrue($report->fresh()->reporter->is($member));
+    }
+
+    public function test_the_morph_map_alias_of_the_reporter_is_stored(): void
+    {
+        Relation::enforceMorphMap(['post' => Post::class, 'user' => User::class]);
+
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+
+        $report = $post->report(['reason' => 'Spam'], $user);
+
+        $this->assertDatabaseHas('reports', [
+            'id' => $report->id,
+            'reportable_type' => 'post',
+            'reporter_type' => 'user',
+        ]);
+        $this->assertTrue(Report::whereMorphedTo('reporter', $user)->first()->is($report));
+    }
+
+    public function test_rows_with_class_names_still_load_with_a_morph_map_that_is_not_enforced(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+        $old = $post->report(['reason' => 'Stored by 3.x'], $user);
+
+        Relation::morphMap(['post' => Post::class, 'user' => User::class]);
+        $new = $post->report(['reason' => 'Stored by 4.x'], $user);
+
+        $this->assertSame(User::class, $old->fresh()->reporter_type);
+        $this->assertSame('user', $new->fresh()->reporter_type);
+
+        $reports = Report::with('reporter', 'reportable')->orderBy('id')->get();
+
+        $this->assertTrue($reports[0]->reporter->is($user));
+        $this->assertTrue($reports[1]->reporter->is($user));
+        $this->assertTrue($reports[0]->reportable->is($post));
+    }
+
+    public function test_the_reporter_in_the_data_cannot_replace_the_given_reporter(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+
+        $report = $post->report(['reason' => 'Spam', 'reporter_id' => 999, 'reporter_type' => Post::class], $user);
+
+        $this->assertTrue($report->fresh()->reporter->is($user));
+    }
+
+    public function test_a_reporter_type_in_the_data_does_not_change_the_stored_key(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+        $user->setAttribute('member_id', 2);
+
+        $report = $post->report(['reason' => 'Spam', 'reporter_type' => Member::class], $user);
+
+        $this->assertSame(User::class, $report->fresh()->reporter_type);
+        $this->assertSame($user->id, $report->fresh()->reporter_id);
+    }
+
+    public function test_an_unknown_reporter_type_in_the_data_is_ignored(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+
+        $report = $post->report(['reason' => 'Spam', 'reporter_type' => 'missing-class'], $user);
+
+        $this->assertTrue($report->fresh()->reporter->is($user));
+    }
+
+    public function test_is_reported_by_checks_reporter_and_reported_model(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        $other = Post::create(['title' => 'Other']);
+        $ada = User::create(['name' => 'Ada']);
+        $grace = User::create(['name' => 'Grace']);
+
+        $this->assertFalse($post->isReportedBy($ada));
+
+        $post->report(['reason' => 'Spam'], $ada);
+
+        $this->assertTrue($post->isReportedBy($ada));
+        $this->assertFalse($post->isReportedBy($grace));
+        $this->assertFalse($other->isReportedBy($ada));
+    }
+
+    public function test_is_reported_by_compares_type_and_key(): void
+    {
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+        $member = Member::create(['name' => 'Grace']);
+
+        $this->assertSame($user->getKey(), $member->getKey());
+
+        $post->report(['reason' => 'Spam'], $member);
+
+        $this->assertTrue($post->isReportedBy($member));
+        $this->assertFalse($post->isReportedBy($user));
+    }
+
+    public function test_is_reported_by_uses_the_morph_map(): void
+    {
+        Relation::enforceMorphMap(['post' => Post::class, 'user' => User::class]);
+
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+        $post->report(['reason' => 'Spam'], $user);
+
+        $this->assertTrue($post->isReportedBy($user));
+    }
+
+    public function test_the_unique_index_from_the_readme_stops_a_second_report(): void
+    {
+        Schema::table('reports', function (Blueprint $table) {
+            $table->unique(['reportable_type', 'reportable_id', 'reporter_type', 'reporter_id'], 'reports_reporter_unique');
+        });
+
+        // MySQL allows index names with at most 64 characters.
+        foreach (Schema::getIndexes('reports') as $index) {
+            $this->assertLessThanOrEqual(64, strlen($index['name']), $index['name']);
+        }
+
+        $post = Post::create(['title' => 'Hello']);
+        $user = User::create(['name' => 'Ada']);
+        $post->report(['reason' => 'Spam'], $user);
+        Post::create(['title' => 'Other'])->report(['reason' => 'Spam'], $user);
+
+        $this->expectException(UniqueConstraintViolationException::class);
+
+        $post->report(['reason' => 'Spam again'], $user);
+    }
+}

@@ -11,51 +11,85 @@
 
 namespace Pmochine\Report\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Arr;
+use Pmochine\Report\Events\ReportCreated;
 
 class Report extends Model
 {
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
-    protected $casts = ['meta' => 'array'];
+    protected $dispatchesEvents = ['created' => ReportCreated::class];
+
+    protected function casts(): array
+    {
+        return ['meta' => 'array'];
+    }
 
     public function reportable(): MorphTo
     {
         return $this->morphTo();
     }
 
+    public function reporter(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
     public function conclusion(): HasOne
     {
-        return $this->hasOne(Conclusion::class);
+        return $this->hasOne(Conclusion::class)->latestOfMany();
     }
 
-    public function judge(): Model
+    public function conclusions(): HasMany
     {
-        return $this->conclusion->judge;
+        return $this->hasMany(Conclusion::class);
     }
 
-    public function conclude($data, Model $judge): Conclusion
+    /**
+     * Reports without a conclusion.
+     */
+    public function scopePending(Builder $query): void
     {
-        $conclusion = (new Conclusion())->fill(array_merge($data, [
-            'judge_id' => $judge->id,
-            'judge_type' => get_class($judge),
-        ]));
+        $query->doesntHave('conclusions');
+    }
 
-        $this->conclusion()->save($conclusion);
+    /**
+     * Reports with at least one conclusion.
+     */
+    public function scopeConcluded(Builder $query): void
+    {
+        $query->has('conclusions');
+    }
+
+    public function judge(): ?Model
+    {
+        return $this->conclusion?->judge;
+    }
+
+    public function conclude(array $data, Model $judge): Conclusion
+    {
+        $conclusion = (new Conclusion())->fill(Arr::except($data, ['judge_id', 'judge_type']));
+        $conclusion->judge()->associate($judge);
+
+        if ($this->conclusion()->save($conclusion)) {
+            $this->setRelation('conclusion', $conclusion);
+        }
 
         return $conclusion;
     }
 
     public static function allJudges(): array
     {
-        $judges = [];
-
-        foreach (Conclusion::get() as $conclusion) {
-            $judges[] = $conclusion->judge;
-        }
-
-        return $judges;
+        return Conclusion::with('judge')->get()
+            ->pluck('judge')
+            ->filter()
+            ->unique(fn (Model $judge) => $judge->getMorphClass() . ':' . $judge->getKey())
+            ->values()
+            ->all();
     }
 }
